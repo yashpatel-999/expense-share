@@ -1,0 +1,201 @@
+<div class="group-detail-container">
+  <div class="page-header">
+    <button class="btn btn-outline back-btn" (click)="goBack()">
+      ← Back to Dashboard
+    </button>
+    <h2>Group Details</h2>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-spinner" *ngIf="isLoadingBalances">
+    <div class="spinner"></div>
+    <p>Loading group balances...</p>
+  </div>
+
+  <div *ngIf="!isLoadingBalances" class="group-content">
+    <!-- Expenses List -->
+    <div class="expenses-section" *ngIf="expenses.length > 0">
+      <h3>Group Expenses</h3>
+      <table class="expenses-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Paid By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let expense of expenses">
+            <td>{{ expense.created_at | date:'short' }}</td>
+            <td>{{ expense.description }}</td>
+            <td>{{ expense.amount | number:'1.2-2' }}</td>
+            <td>{{ expense.username }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Balances Overview -->
+    <div class="balances-section">
+      <h3>Current Balances</h3>
+      
+      <div class="balances-grid">
+        <!-- Positive Balances (Owed Money) -->
+        <div class="balance-card positive" *ngFor="let balance of getPositiveBalances()">
+          <div class="balance-user">{{ balance.username }}</div>
+          <div class="balance-amount">{{ formatCurrency(balance.balance) }}</div>
+          <div class="balance-label">is owed</div>
+        </div>
+
+        <div class="balance-card negative" *ngFor="let balance of getNegativeBalances()">
+          <div class="balance-user">{{ balance.username }}</div>
+          <div class="balance-amount">{{ formatAbsoluteCurrency(balance.balance) }}</div>
+          <div class="balance-label">owes</div>
+        </div>
+
+        <!-- Zero Balances -->
+        <div class="balance-card neutral" *ngFor="let balance of getZeroBalances()">
+          <div class="balance-user">{{ balance.username }}</div>
+          <div class="balance-amount">{{ formatCurrency(0) }}</div>
+          <div class="balance-label">settled</div>
+        </div>
+      </div>
+
+      <div class="no-balances" *ngIf="balances.length === 0">
+        No balances to display. Add some expenses to get started!
+      </div>
+    </div>
+
+    <!-- Settlement Suggestions -->
+    <div class="settlements-section" *ngIf="balances.length > 0">
+      <h3>Settlement Suggestions</h3>
+      
+      <div class="settlements-list">
+        <div 
+          *ngFor="let suggestion of getSettlementSuggestions()" 
+          class="settlement-item"
+        >
+          <span class="settlement-text">
+            <strong>{{ suggestion.from.username }}</strong> should pay 
+            <strong>{{ formatCurrency(suggestion.amount) }}</strong> to 
+            <strong>{{ suggestion.to.username }}</strong>
+          </span>
+        </div>
+        
+        <div *ngIf="getSettlementSuggestions().length === 0" class="no-settlements">
+          All balances are settled! 🎉
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="actions-grid">
+      <!-- Add Expense -->
+      <div class="action-card">
+        <h3>Add New Expense</h3>
+        
+        <form (ngSubmit)="addExpense()" #expenseForm="ngForm" class="action-form">
+          <div class="form-group">
+            <input
+              type="text"
+              name="description"
+              [(ngModel)]="newExpense.description"
+              placeholder="Expense description (e.g., Dinner at restaurant)"
+              required
+              class="form-input"
+            />
+          </div>
+          
+          <div class="form-group">
+            <input
+              type="number"
+              name="amount"
+              [(ngModel)]="newExpense.amount"
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              required
+              class="form-input"
+            />
+          </div>
+          
+          <div class="message error-message" *ngIf="expenseError">
+            {{ expenseError }}
+          </div>
+          
+          <div class="message success-message" *ngIf="expenseSuccess">
+            {{ expenseSuccess }}
+          </div>
+          
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isAddingExpense"
+          >
+            <span *ngIf="!isAddingExpense">Add Expense</span>
+            <span *ngIf="isAddingExpense">Adding...</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Record Payment -->
+      <div class="action-card">
+        <h3>Record Payment</h3>
+        
+        <form (ngSubmit)="recordPayment()" #paymentForm="ngForm" class="action-form">
+          <div class="form-group">
+            <select
+              name="to_user_id"
+              [(ngModel)]="newPayment.to_user_id"
+              required
+              class="form-input"
+              [disabled]="!getCurrentUserNegativeBalance()"
+            >
+              <option value="">Select who you paid</option>
+              <option *ngFor="let balance of getPositiveBalances()" [value]="balance.user_id">
+                {{ balance.username }}
+              </option>
+            </select>
+            <div class="message info-message" *ngIf="!getCurrentUserNegativeBalance()">
+              Only members who owe money (negative balance) can record payments.
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <input
+              type="number"
+              name="amount"
+              [(ngModel)]="newPayment.amount"
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              [max]="getSelectedRecipientMax()"
+              required
+              class="form-input"
+            />
+            <div class="message info-message" *ngIf="getSelectedRecipientMax() > 0">
+              Maximum you can pay: ${{ getSelectedRecipientMax().toFixed(2) }} (limited by your negative balance and recipient's positive balance)
+            </div>
+          </div>
+          
+          <div class="message error-message" *ngIf="paymentError">
+            {{ paymentError }}
+          </div>
+          
+          <div class="message success-message" *ngIf="paymentSuccess">
+            {{ paymentSuccess }}
+          </div>
+          
+          <button
+            type="submit"
+            class="btn btn-secondary"
+            [disabled]="isRecordingPayment"
+          >
+            <span *ngIf="!isRecordingPayment">Record Payment</span>
+            <span *ngIf="isRecordingPayment">Recording...</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

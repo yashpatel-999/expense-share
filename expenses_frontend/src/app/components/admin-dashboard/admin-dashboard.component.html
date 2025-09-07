@@ -1,0 +1,183 @@
+<div class="admin-container">
+  <h2>Admin Dashboard</h2>
+  
+  <div class="admin-grid">
+    <!-- Create User Section -->
+    <div class="admin-card">
+      <h3>Create New User</h3>
+      
+      <form (ngSubmit)="createUser()" #userForm="ngForm" class="admin-form">
+        <div class="form-group">
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="newUser.email"
+            placeholder="Email"
+            required
+            email
+            class="form-input"
+          />
+        </div>
+        
+        <div class="form-group">
+          <input
+            type="text"
+            name="username"
+            [(ngModel)]="newUser.username"
+            placeholder="Username"
+            required
+            class="form-input"
+          />
+        </div>
+        
+        <div class="form-group">
+          <input
+            type="password"
+            name="password"
+            [(ngModel)]="newUser.password"
+            placeholder="Password"
+            required
+            class="form-input"
+          />
+        </div>
+        
+        <div class="message error-message" *ngIf="userError">
+          {{ userError }}
+        </div>
+        
+        <div class="message success-message" *ngIf="userSuccess">
+          {{ userSuccess }}
+        </div>
+        
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isCreatingUser"
+        >
+          <span *ngIf="!isCreatingUser">Create User</span>
+          <span *ngIf="isCreatingUser">Creating...</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Create Group Section -->
+    <div class="admin-card">
+      <h3>Create New Group</h3>
+      
+      <form (ngSubmit)="createGroup()" #groupForm="ngForm" class="admin-form">
+        <div class="form-group">
+          <input
+            type="text"
+            name="groupName"
+            [(ngModel)]="newGroup.name"
+            placeholder="Group Name"
+            required
+            class="form-input"
+          />
+        </div>
+        
+        <div class="form-group">
+          <h4>Select Group Members:</h4>
+          <div class="user-selection" *ngIf="users.length > 0">
+            <div 
+              *ngFor="let user of users" 
+              class="user-checkbox"
+            >
+              <input
+                type="checkbox"
+                [id]="'user-' + user.id"
+                [checked]="isUserSelected(user.id)"
+                (change)="toggleUserSelection(user.id)"
+              />
+              <label [for]="'user-' + user.id">
+                {{ user.username }} ({{ user.email }})
+                <span class="admin-badge" *ngIf="user.is_admin">Admin</span>
+              </label>
+            </div>
+          </div>
+          
+          <div *ngIf="users.length === 0 && !isLoadingUsers" class="no-users">
+            No users available. Create some users first.
+          </div>
+          
+          <div *ngIf="isLoadingUsers" class="loading">
+            Loading users...
+          </div>
+        </div>
+        
+        <div class="selected-users" *ngIf="selectedUsers.length > 0">
+          <h5>Selected Members ({{ selectedUsers.length }}):</h5>
+          <div class="selected-user-list">
+            <span 
+              *ngFor="let userId of selectedUsers" 
+              class="selected-user-tag"
+            >
+              {{ getUserById(userId)?.username }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="message error-message" *ngIf="groupError">
+          {{ groupError }}
+        </div>
+        
+        <div class="message success-message" *ngIf="groupSuccess">
+          {{ groupSuccess }}
+        </div>
+        
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isCreatingGroup"
+        >
+          <span *ngIf="!isCreatingGroup">Create Group</span>
+          <span *ngIf="isCreatingGroup">Creating...</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Users List Section -->
+    <div class="admin-card full-width">
+      <div class="card-header">
+        <h3>All Users</h3>
+        <button 
+          class="btn btn-secondary"
+          (click)="loadUsers()"
+          [disabled]="isLoadingUsers"
+        >
+          <span *ngIf="!isLoadingUsers">Refresh</span>
+          <span *ngIf="isLoadingUsers">Loading...</span>
+        </button>
+      </div>
+      
+      <div class="users-table" *ngIf="users.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="role-badge" [class.admin]="user.is_admin">
+                  {{ user.is_admin ? 'Admin' : 'User' }}
+                </span>
+              </td>
+              <td class="id-cell">{{ user.id }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div *ngIf="users.length === 0 && !isLoadingUsers" class="no-data">
+        No users found.
+      </div>
+    </div>
+  </div>
+</div>

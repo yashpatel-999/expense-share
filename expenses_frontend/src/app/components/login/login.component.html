@@ -1,0 +1,46 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Expense Sharing App</h2>
+    <p class="login-subtitle">Sign in to your account</p>
+    
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form">
+      <div class="form-group">
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="loginData.email"
+          placeholder="Email"
+          required
+          email
+          class="form-input"
+          [class.invalid]="loginForm.submitted && !loginData.email"
+        />
+      </div>
+      
+      <div class="form-group">
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="loginData.password"
+          placeholder="Password"
+          required
+          class="form-input"
+          [class.invalid]="loginForm.submitted && !loginData.password"
+        />
+      </div>
+      
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+      
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">Sign In</span>
+        <span *ngIf="isLoading">Signing In...</span>
+      </button>
+    </form>
+  </div>
+</div>

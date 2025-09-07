@@ -1,0 +1,30 @@
+<div class="app-container">
+  <header class="app-header" *ngIf="currentUser">
+    <div class="header-content">
+      <h1>{{ title }}</h1>
+      <div class="header-actions">
+        <span class="user-info">Welcome, {{ currentUser.username }}</span>
+        <button 
+          class="btn btn-secondary" 
+          *ngIf="currentUser.is_admin" 
+          (click)="goToAdmin()">
+          Admin Panel
+        </button>
+        <button 
+          class="btn btn-secondary" 
+          (click)="goToDashboard()">
+          Dashboard
+        </button>
+        <button 
+          class="btn btn-outline" 
+          (click)="logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>

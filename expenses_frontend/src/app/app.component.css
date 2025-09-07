@@ -1,0 +1,8 @@
+/* App-specific styles are handled by global styles in styles.css */
+
+/* Any component-specific overrides can go here */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

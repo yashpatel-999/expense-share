@@ -1,0 +1,58 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>My Groups</h2>
+    <button 
+      class="btn btn-secondary refresh-btn"
+      (click)="refreshGroups()"
+      [disabled]="isLoading"
+    >
+      <span *ngIf="!isLoading">Refresh</span>
+      <span *ngIf="isLoading">Loading...</span>
+    </button>
+  </div>
+
+  <div class="welcome-message" *ngIf="currentUser">
+    <p>Welcome back, <strong>{{ currentUser.username }}</strong>!</p>
+    <p *ngIf="groups.length === 0 && !isLoading">You're not part of any groups yet. Contact your admin to be added to a group.</p>
+  </div>
+
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading your groups...</p>
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+    <button class="btn btn-outline retry-btn" (click)="loadGroups()">
+      Retry
+    </button>
+  </div>
+
+  <div class="groups-grid" *ngIf="!isLoading && groups.length > 0">
+    <div 
+      *ngFor="let group of groups" 
+      class="group-card"
+      (click)="viewGroup(group.id)"
+    >
+      <div class="group-header">
+        <h3>{{ group.name }}</h3>
+        <div class="group-meta">
+          <span class="created-date">Created {{ formatDate(group.created_at) }}</span>
+        </div>
+      </div>
+      
+      <div class="group-actions">
+        <button class="btn btn-primary view-btn">
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && groups.length === 0 && !errorMessage">
+    <div class="empty-icon">📊</div>
+    <h3>No Groups Yet</h3>
+    <p>You haven't been added to any expense groups.</p>
+    <p>Contact your administrator to join groups and start tracking shared expenses.</p>
+  </div>
+</div>
