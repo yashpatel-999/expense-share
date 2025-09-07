@@ -125,7 +125,7 @@ export class GroupDetailComponent implements OnInit {
     // Limit payment to min(abs(negative balance), positive balance)
     const maxPayable = Math.min(Math.abs(currentUserBalance.balance), toUserBalance.balance);
     if (this.newPayment.amount > maxPayable) {
-      this.paymentError = `You cannot pay more than $${maxPayable.toFixed(2)} (your negative balance or recipient's positive balance).`;
+      this.paymentError = `You cannot pay more than ₹${maxPayable.toFixed(2)} (your negative balance or recipient's positive balance).`;
       return;
     }
 
@@ -137,7 +137,7 @@ export class GroupDetailComponent implements OnInit {
       next: () => {
         this.isRecordingPayment = false;
         const toUser = this.getUserById(this.newPayment.to_user_id);
-        this.paymentSuccess = `Payment of $${this.newPayment.amount.toFixed(2)} to ${toUser?.username} recorded successfully!`;
+        this.paymentSuccess = `Payment of ₹${this.newPayment.amount.toFixed(2)} to ${toUser?.username} recorded successfully!`;
         this.newPayment = { to_user_id: '', amount: 0 };
         this.loadBalances(); // Refresh balances
       },
@@ -205,16 +205,16 @@ export class GroupDetailComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(amount);
   }
 
   formatAbsoluteCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(Math.abs(amount));
   }
 
