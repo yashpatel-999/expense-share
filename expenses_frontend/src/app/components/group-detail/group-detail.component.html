@@ -1,9 +1,9 @@
 <div class="group-detail-container">
   <div class="page-header">
     <button class="btn btn-outline back-btn" (click)="goBack()">
-      ← Back to Dashboard
+      <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
     </button>
-    <h2>Group Details</h2>
+    <h2><i class="bi bi-people me-2"></i>Group Details</h2>
   </div>
 
   <!-- Loading State -->
@@ -15,14 +15,14 @@
   <div *ngIf="!isLoadingBalances" class="group-content">
     <!-- Expenses List -->
     <div class="expenses-section" *ngIf="expenses.length > 0">
-      <h3>Group Expenses</h3>
+      <h3><i class="bi bi-receipt me-2"></i>Group Expenses</h3>
       <table class="expenses-table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Paid By</th>
+            <th><i class="bi bi-calendar3 me-1"></i>Date</th>
+            <th><i class="bi bi-card-text me-1"></i>Description</th>
+            <th><i class="bi bi-currency-rupee me-1"></i>Amount</th>
+            <th><i class="bi bi-person me-1"></i>Paid By</th>
           </tr>
         </thead>
         <tbody>
@@ -37,17 +37,19 @@
     </div>
     <!-- Balances Overview -->
     <div class="balances-section">
-      <h3>Current Balances</h3>
+      <h3><i class="bi bi-bar-chart me-2"></i>Current Balances</h3>
       
       <div class="balances-grid">
         <!-- Positive Balances (Owed Money) -->
         <div class="balance-card positive" *ngFor="let balance of getPositiveBalances()">
+          <div class="balance-icon"><i class="bi bi-arrow-up-circle"></i></div>
           <div class="balance-user">{{ balance.username }}</div>
           <div class="balance-amount">{{ formatCurrency(balance.balance) }}</div>
           <div class="balance-label">is owed</div>
         </div>
 
         <div class="balance-card negative" *ngFor="let balance of getNegativeBalances()">
+          <div class="balance-icon"><i class="bi bi-arrow-down-circle"></i></div>
           <div class="balance-user">{{ balance.username }}</div>
           <div class="balance-amount">{{ formatAbsoluteCurrency(balance.balance) }}</div>
           <div class="balance-label">owes</div>
@@ -55,6 +57,7 @@
 
         <!-- Zero Balances -->
         <div class="balance-card neutral" *ngFor="let balance of getZeroBalances()">
+          <div class="balance-icon"><i class="bi bi-check-circle"></i></div>
           <div class="balance-user">{{ balance.username }}</div>
           <div class="balance-amount">{{ formatCurrency(0) }}</div>
           <div class="balance-label">settled</div>
@@ -68,13 +71,14 @@
 
     <!-- Settlement Suggestions -->
     <div class="settlements-section" *ngIf="balances.length > 0">
-      <h3>Settlement Suggestions</h3>
+      <h3><i class="bi bi-arrow-left-right me-2"></i>Settlement Suggestions</h3>
       
       <div class="settlements-list">
         <div 
           *ngFor="let suggestion of getSettlementSuggestions()" 
           class="settlement-item"
         >
+          <i class="bi bi-arrow-right settlement-arrow"></i>
           <span class="settlement-text">
             <strong>{{ suggestion.from.username }}</strong> should pay 
             <strong>{{ formatCurrency(suggestion.amount) }}</strong> to 
@@ -83,7 +87,7 @@
         </div>
         
         <div *ngIf="getSettlementSuggestions().length === 0" class="no-settlements">
-          All balances are settled! 🎉
+          <i class="bi bi-check-circle-fill me-2"></i>All balances are settled! 🎉
         </div>
       </div>
     </div>
@@ -92,7 +96,7 @@
     <div class="actions-grid">
       <!-- Add Expense -->
       <div class="action-card">
-        <h3>Add New Expense</h3>
+        <h3><i class="bi bi-plus-circle me-2"></i>Add New Expense</h3>
         
         <form (ngSubmit)="addExpense()" #expenseForm="ngForm" class="action-form">
           <div class="form-group">
@@ -132,6 +136,7 @@
             class="btn btn-primary"
             [disabled]="isAddingExpense"
           >
+            <i class="bi bi-plus-circle me-1"></i>
             <span *ngIf="!isAddingExpense">Add Expense</span>
             <span *ngIf="isAddingExpense">Adding...</span>
           </button>
@@ -139,8 +144,8 @@
       </div>
 
       <!-- Record Payment -->
-      <div class="action-card">
-        <h3>Record Payment</h3>
+      <div class="action-card" *ngIf="getCurrentUserNegativeBalance()">
+        <h3><i class="bi bi-credit-card me-2"></i>Record Payment</h3>
         
         <form (ngSubmit)="recordPayment()" #paymentForm="ngForm" class="action-form">
           <div class="form-group">
@@ -191,6 +196,7 @@
             class="btn btn-secondary"
             [disabled]="isRecordingPayment"
           >
+            <i class="bi bi-credit-card me-1"></i>
             <span *ngIf="!isRecordingPayment">Record Payment</span>
             <span *ngIf="isRecordingPayment">Recording...</span>
           </button>

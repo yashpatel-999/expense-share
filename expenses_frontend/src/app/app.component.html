@@ -1,24 +1,24 @@
 <div class="app-container">
   <header class="app-header" *ngIf="currentUser">
-    <div class="header-content">
-      <h1>{{ title }}</h1>
-      <div class="header-actions">
-        <span class="user-info">Welcome, {{ currentUser.username }}</span>
+    <div class="header-content container-fluid">
+      <h1 class="h3 mb-0">{{ title }}</h1>
+      <div class="header-actions d-flex align-items-center gap-2">
+        <span class="user-info text-muted small">Welcome, {{ currentUser.username }}</span>
         <button 
-          class="btn btn-secondary" 
+          class="btn btn-primary btn-sm" 
           *ngIf="currentUser.is_admin" 
           (click)="goToAdmin()">
-          Admin Panel
+          <i class="bi bi-gear-fill me-1"></i>Admin Panel
         </button>
         <button 
-          class="btn btn-secondary" 
+          class="btn btn-info btn-sm" 
           (click)="goToDashboard()">
-          Dashboard
+          <i class="bi bi-speedometer2 me-1"></i>Dashboard
         </button>
         <button 
-          class="btn btn-outline" 
+          class="btn btn-outline-danger btn-sm" 
           (click)="logout()">
-          Logout
+          <i class="bi bi-box-arrow-right me-1"></i>Logout
         </button>
       </div>
     </div>

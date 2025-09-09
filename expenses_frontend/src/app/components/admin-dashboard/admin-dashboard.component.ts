@@ -19,7 +19,8 @@ export class AdminDashboardComponent implements OnInit {
   newUser: CreateUserRequest = {
     email: '',
     username: '',
-    password: ''
+    password: '',
+    is_admin: false
   };
   
   newGroup: CreateGroupRequest = {
@@ -71,7 +72,7 @@ export class AdminDashboardComponent implements OnInit {
       next: (user) => {
         this.isCreatingUser = false;
         this.userSuccess = `User ${user.username} created successfully!`;
-        this.newUser = { email: '', username: '', password: '' };
+        this.newUser = { email: '', username: '', password: '', is_admin: false };
         this.loadUsers(); // Refresh the list
       },
       error: (error) => {

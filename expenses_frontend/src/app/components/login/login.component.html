@@ -1,46 +1,65 @@
 <div class="login-container">
   <div class="login-card">
-    <h2>Expense Sharing App</h2>
-    <p class="login-subtitle">Sign in to your account</p>
+    <div class="login-header">
+      <i class="bi bi-wallet2 app-icon"></i>
+      <h2><i class="bi bi-receipt-cutoff"></i> Expense Sharing App</h2>
+      <p class="login-subtitle">
+        <i class="bi bi-person-circle"></i> Sign in to your account
+      </p>
+    </div>
     
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form">
       <div class="form-group">
-        <input
-          type="email"
-          name="email"
-          [(ngModel)]="loginData.email"
-          placeholder="Email"
-          required
-          email
-          class="form-input"
-          [class.invalid]="loginForm.submitted && !loginData.email"
-        />
+        <div class="input-group">
+          <i class="bi bi-envelope input-icon"></i>
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="loginData.email"
+            placeholder="Email"
+            required
+            email
+            class="form-input"
+            [class.invalid]="loginForm.submitted && !loginData.email"
+          />
+        </div>
       </div>
       
       <div class="form-group">
-        <input
-          type="password"
-          name="password"
-          [(ngModel)]="loginData.password"
-          placeholder="Password"
-          required
-          class="form-input"
-          [class.invalid]="loginForm.submitted && !loginData.password"
-        />
+        <div class="input-group">
+          <i class="bi bi-lock input-icon"></i>
+          <input
+            type="password"
+            name="password"
+            [(ngModel)]="loginData.password"
+            placeholder="Password"
+            required
+            class="form-input"
+            [class.invalid]="loginForm.submitted && !loginData.password"
+          />
+        </div>
       </div>
       
       <div class="error-message" *ngIf="errorMessage">
+        <i class="bi bi-exclamation-triangle-fill"></i>
         {{ errorMessage }}
       </div>
       
       <button
         type="submit"
-        class="btn btn-primary"
+        class="btn btn-primary login-btn"
         [disabled]="isLoading"
       >
+        <i class="bi bi-box-arrow-in-right" *ngIf="!isLoading"></i>
+        <i class="bi bi-hourglass-split spinning" *ngIf="isLoading"></i>
         <span *ngIf="!isLoading">Sign In</span>
         <span *ngIf="isLoading">Signing In...</span>
       </button>
     </form>
+
+    <div class="login-help">
+      <p><i class="bi bi-info-circle"></i> Contact your administrator for account access</p>
+      <p><i class="bi bi-shield-check"></i> Your data is secure and encrypted</p>
+    </div>
   </div>
 </div>

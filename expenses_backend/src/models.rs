@@ -81,6 +81,6 @@ pub struct Settlement {
 
 #[derive(Debug, Deserialize)]
 pub struct CreatePayment {
-    pub to_user_id: Uuid,
+    pub to_user_id: String,
     pub amount: f64,
 }

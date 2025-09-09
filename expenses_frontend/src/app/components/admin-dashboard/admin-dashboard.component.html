@@ -1,51 +1,79 @@
 <div class="admin-container">
-  <h2>Admin Dashboard</h2>
+  
   
   <div class="admin-grid">
     <!-- Create User Section -->
     <div class="admin-card">
-      <h3>Create New User</h3>
+      <h3><i class="bi bi-person-plus"></i> Create New User</h3>
       
       <form (ngSubmit)="createUser()" #userForm="ngForm" class="admin-form">
         <div class="form-group">
-          <input
-            type="email"
-            name="email"
-            [(ngModel)]="newUser.email"
-            placeholder="Email"
-            required
-            email
-            class="form-input"
-          />
+          <div class="input-group">
+            <i class="bi bi-envelope input-icon"></i>
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="newUser.email"
+              placeholder="Email"
+              required
+              email
+              class="form-input"
+            />
+          </div>
         </div>
         
         <div class="form-group">
-          <input
-            type="text"
-            name="username"
-            [(ngModel)]="newUser.username"
-            placeholder="Username"
-            required
-            class="form-input"
-          />
+          <div class="input-group">
+            <i class="bi bi-person input-icon"></i>
+            <input
+              type="text"
+              name="username"
+              [(ngModel)]="newUser.username"
+              placeholder="Username"
+              required
+              class="form-input"
+            />
+          </div>
         </div>
         
         <div class="form-group">
-          <input
-            type="password"
-            name="password"
-            [(ngModel)]="newUser.password"
-            placeholder="Password"
-            required
-            class="form-input"
-          />
+          <div class="input-group">
+            <i class="bi bi-lock input-icon"></i>
+            <input
+              type="password"
+              name="password"
+              [(ngModel)]="newUser.password"
+              placeholder="Password"
+              required
+              class="form-input"
+            />
+          </div>
+        </div>
+        
+        <div class="form-group admin-privilege-group">
+          <div class="checkbox-group">
+            <input
+              type="checkbox"
+              name="isAdmin"
+              [(ngModel)]="newUser.is_admin"
+              id="admin-checkbox"
+              class="admin-checkbox"
+            />
+            <label for="admin-checkbox" class="admin-label">
+              <i class="bi bi-shield-check admin-icon"></i>
+              Grant Admin Privileges
+              <span class="admin-note">(Optional - User will be regular user by default)</span>
+            </label>
+          </div>
         </div>
         
         <div class="message error-message" *ngIf="userError">
+          <i class="bi bi-exclamation-triangle-fill"></i>
           {{ userError }}
         </div>
         
         <div class="message success-message" *ngIf="userSuccess">
+          <i class="bi bi-check-circle-fill"></i>
           {{ userSuccess }}
         </div>
         
@@ -54,6 +82,8 @@
           class="btn btn-primary"
           [disabled]="isCreatingUser"
         >
+          <i class="bi bi-person-plus-fill" *ngIf="!isCreatingUser"></i>
+          <i class="bi bi-hourglass-split spinning" *ngIf="isCreatingUser"></i>
           <span *ngIf="!isCreatingUser">Create User</span>
           <span *ngIf="isCreatingUser">Creating...</span>
         </button>
@@ -62,22 +92,25 @@
 
     <!-- Create Group Section -->
     <div class="admin-card">
-      <h3>Create New Group</h3>
+      <h3><i class="bi bi-people-fill"></i> Create New Group</h3>
       
       <form (ngSubmit)="createGroup()" #groupForm="ngForm" class="admin-form">
         <div class="form-group">
-          <input
-            type="text"
-            name="groupName"
-            [(ngModel)]="newGroup.name"
-            placeholder="Group Name"
-            required
-            class="form-input"
-          />
+          <div class="input-group">
+            <i class="bi bi-collection input-icon"></i>
+            <input
+              type="text"
+              name="groupName"
+              [(ngModel)]="newGroup.name"
+              placeholder="Group Name"
+              required
+              class="form-input"
+            />
+          </div>
         </div>
         
         <div class="form-group">
-          <h4>Select Group Members:</h4>
+          <h4><i class="bi bi-person-check"></i> Select Group Members:</h4>
           <div class="user-selection" *ngIf="users.length > 0">
             <div 
               *ngFor="let user of users" 
@@ -90,38 +123,44 @@
                 (change)="toggleUserSelection(user.id)"
               />
               <label [for]="'user-' + user.id">
+                <i class="bi bi-person-circle"></i>
                 {{ user.username }} ({{ user.email }})
-                <span class="admin-badge" *ngIf="user.is_admin">Admin</span>
+                <span class="admin-badge" *ngIf="user.is_admin">
+                  <i class="bi bi-shield-check"></i> Admin
+                </span>
               </label>
             </div>
           </div>
           
           <div *ngIf="users.length === 0 && !isLoadingUsers" class="no-users">
-            No users available. Create some users first.
+            <i class="bi bi-person-x"></i> No users available. Create some users first.
           </div>
           
           <div *ngIf="isLoadingUsers" class="loading">
-            Loading users...
+            <i class="bi bi-hourglass-split spinning"></i> Loading users...
           </div>
         </div>
         
         <div class="selected-users" *ngIf="selectedUsers.length > 0">
-          <h5>Selected Members ({{ selectedUsers.length }}):</h5>
+          <h5><i class="bi bi-people"></i> Selected Members ({{ selectedUsers.length }}):</h5>
           <div class="selected-user-list">
             <span 
               *ngFor="let userId of selectedUsers" 
               class="selected-user-tag"
             >
+              <i class="bi bi-person-check-fill"></i>
               {{ getUserById(userId)?.username }}
             </span>
           </div>
         </div>
         
         <div class="message error-message" *ngIf="groupError">
+          <i class="bi bi-exclamation-triangle-fill"></i>
           {{ groupError }}
         </div>
         
         <div class="message success-message" *ngIf="groupSuccess">
+          <i class="bi bi-check-circle-fill"></i>
           {{ groupSuccess }}
         </div>
         
@@ -130,6 +169,8 @@
           class="btn btn-primary"
           [disabled]="isCreatingGroup"
         >
+          <i class="bi bi-plus-circle-fill" *ngIf="!isCreatingGroup"></i>
+          <i class="bi bi-hourglass-split spinning" *ngIf="isCreatingGroup"></i>
           <span *ngIf="!isCreatingGroup">Create Group</span>
           <span *ngIf="isCreatingGroup">Creating...</span>
         </button>
@@ -139,12 +180,14 @@
     <!-- Users List Section -->
     <div class="admin-card full-width">
       <div class="card-header">
-        <h3>All Users</h3>
+        <h3><i class="bi bi-people"></i> All Users</h3>
         <button 
           class="btn btn-secondary"
           (click)="loadUsers()"
           [disabled]="isLoadingUsers"
         >
+          <i class="bi bi-arrow-clockwise" *ngIf="!isLoadingUsers"></i>
+          <i class="bi bi-hourglass-split spinning" *ngIf="isLoadingUsers"></i>
           <span *ngIf="!isLoadingUsers">Refresh</span>
           <span *ngIf="isLoadingUsers">Loading...</span>
         </button>
@@ -154,29 +197,41 @@
         <table>
           <thead>
             <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>ID</th>
+              <th class="username-col">
+                <i class="bi bi-person"></i>Username
+              </th>
+              <th class="email-col">
+                <i class="bi bi-envelope"></i>Email
+              </th>
+              <th class="role-col">
+                <i class="bi bi-shield"></i>Role
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let user of users">
-              <td>{{ user.username }}</td>
-              <td>{{ user.email }}</td>
-              <td>
+              <td class="username-cell">
+                <i class="bi bi-person-circle"></i>
+                {{ user.username }}
+              </td>
+              <td class="email-cell">
+                <i class="bi bi-envelope-fill"></i>
+                {{ user.email }}
+              </td>
+              <td class="role-cell">
                 <span class="role-badge" [class.admin]="user.is_admin">
+                  <i class="bi bi-shield-check" *ngIf="user.is_admin"></i>
+                  <i class="bi bi-person" *ngIf="!user.is_admin"></i>
                   {{ user.is_admin ? 'Admin' : 'User' }}
                 </span>
               </td>
-              <td class="id-cell">{{ user.id }}</td>
             </tr>
           </tbody>
         </table>
       </div>
       
       <div *ngIf="users.length === 0 && !isLoadingUsers" class="no-data">
-        No users found.
+        <i class="bi bi-inbox"></i> No users found.
       </div>
     </div>
   </div>

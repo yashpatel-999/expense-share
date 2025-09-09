@@ -15,6 +15,11 @@ import { User } from '../../models/user.interface';
 })
 export class GroupDetailComponent implements OnInit {
   expenses: any[] = [];
+  
+  // Epsilon for floating-point comparisons (0.01 = 1 cent precision)
+  // This prevents issues with tiny precision errors like 0.00001 being treated as non-zero
+  private readonly EPSILON = 0.01;
+  
   loadExpenses() {
     this.apiService.getGroupExpenses(this.groupId).subscribe({
       next: (expenses) => {
@@ -65,6 +70,24 @@ export class GroupDetailComponent implements OnInit {
     }
   }
 
+  // Helper methods for robust floating-point comparisons
+  // These methods use epsilon-based comparison to handle precision errors
+  private isPositive(amount: number): boolean {
+    return amount > this.EPSILON;
+  }
+
+  private isNegative(amount: number): boolean {
+    return amount < -this.EPSILON;
+  }
+
+  private isZero(amount: number): boolean {
+    return Math.abs(amount) <= this.EPSILON;
+  }
+
+  private roundToTwoDecimals(amount: number): number {
+    return Math.round(amount * 100) / 100;
+  }
+
   loadBalances() {
     this.isLoadingBalances = true;
     this.apiService.getGroupBalances(this.groupId).subscribe({
@@ -108,13 +131,13 @@ export class GroupDetailComponent implements OnInit {
   recordPayment() {
     // Only allow current user to pay if they have negative balance
     const currentUserBalance = this.balances.find(b => b.user_id === this.currentUser?.id);
-    if (!currentUserBalance || currentUserBalance.balance >= 0) {
+    if (!currentUserBalance || !this.isNegative(currentUserBalance.balance)) {
       this.paymentError = 'Only members who owe money (negative balance) can record payments.';
       return;
     }
     // Only allow payment to users with positive balance
     const toUserBalance = this.balances.find(b => b.user_id === this.newPayment.to_user_id);
-    if (!toUserBalance || toUserBalance.balance <= 0) {
+    if (!toUserBalance || !this.isPositive(toUserBalance.balance)) {
       this.paymentError = 'You can only pay members who are owed money (positive balance).';
       return;
     }
@@ -124,8 +147,13 @@ export class GroupDetailComponent implements OnInit {
     }
     // Limit payment to min(abs(negative balance), positive balance)
     const maxPayable = Math.min(Math.abs(currentUserBalance.balance), toUserBalance.balance);
-    if (this.newPayment.amount > maxPayable) {
-      this.paymentError = `You cannot pay more than ₹${maxPayable.toFixed(2)} (your negative balance or recipient's positive balance).`;
+    
+    // Round to avoid floating point precision issues
+    const roundedMaxPayable = this.roundToTwoDecimals(maxPayable);
+    const roundedPaymentAmount = this.roundToTwoDecimals(this.newPayment.amount);
+    
+    if (roundedPaymentAmount > roundedMaxPayable + this.EPSILON) {
+      this.paymentError = `You cannot pay more than ₹${roundedMaxPayable.toFixed(2)} (your debt amount).`;
       return;
     }
 
@@ -137,7 +165,7 @@ export class GroupDetailComponent implements OnInit {
       next: () => {
         this.isRecordingPayment = false;
         const toUser = this.getUserById(this.newPayment.to_user_id);
-        this.paymentSuccess = `Payment of ₹${this.newPayment.amount.toFixed(2)} to ${toUser?.username} recorded successfully!`;
+        this.paymentSuccess = `Payment of ₹${this.newPayment.amount} to ${toUser?.username} recorded successfully!`;
         this.newPayment = { to_user_id: '', amount: 0 };
         this.loadBalances(); // Refresh balances
       },
@@ -152,8 +180,10 @@ export class GroupDetailComponent implements OnInit {
   getSelectedRecipientMax(): number {
     const toUserBalance = this.balances.find(b => b.user_id === this.newPayment.to_user_id);
     const currentUserBalance = this.balances.find(b => b.user_id === this.currentUser?.id);
-    if (toUserBalance && toUserBalance.balance > 0 && currentUserBalance && currentUserBalance.balance < 0) {
-      return Math.min(toUserBalance.balance, Math.abs(currentUserBalance.balance));
+    if (toUserBalance && this.isPositive(toUserBalance.balance) && 
+        currentUserBalance && this.isNegative(currentUserBalance.balance)) {
+      const maxAmount = Math.min(toUserBalance.balance, Math.abs(currentUserBalance.balance));
+      return this.roundToTwoDecimals(maxAmount);
     }
     return 0;
   }
@@ -163,21 +193,22 @@ export class GroupDetailComponent implements OnInit {
   }
 
   getPositiveBalances(): Balance[] {
-    // Only members with positive balance
-    return this.balances.filter(balance => balance.balance > 0);
+    // Only members with positive balance (more than epsilon)
+    return this.balances.filter(balance => this.isPositive(balance.balance));
   }
 
   getCurrentUserNegativeBalance(): boolean {
     const currentUserBalance = this.balances.find(b => b.user_id === this.currentUser?.id);
-    return !!currentUserBalance && currentUserBalance.balance < 0;
+    // Only show payment section if user owes more than epsilon
+    return !!currentUserBalance && this.isNegative(currentUserBalance.balance);
   }
 
   getNegativeBalances(): Balance[] {
-    return this.balances.filter(balance => balance.balance < 0);
+    return this.balances.filter(balance => this.isNegative(balance.balance));
   }
 
   getZeroBalances(): Balance[] {
-    return this.balances.filter(balance => balance.balance === 0);
+    return this.balances.filter(balance => this.isZero(balance.balance));
   }
 
   getSettlementSuggestions(): { from: Balance; to: Balance; amount: number }[] {
@@ -185,18 +216,22 @@ export class GroupDetailComponent implements OnInit {
     const creditors = this.getPositiveBalances().map(b => ({ ...b }));
     const suggestions: { from: Balance; to: Balance; amount: number }[] = [];
 
-    // Simple settlement algorithm
+    // Simple settlement algorithm with epsilon-based comparisons
     for (let debtor of debtors) {
       for (let creditor of creditors) {
-        if (Math.abs(debtor.balance) > 0.01 && creditor.balance > 0.01) {
+        if (this.isNegative(debtor.balance) && this.isPositive(creditor.balance)) {
           const amount = Math.min(Math.abs(debtor.balance), creditor.balance);
-          suggestions.push({
-            from: debtor,
-            to: creditor,
-            amount: amount
-          });
-          debtor.balance += amount;
-          creditor.balance -= amount;
+          const roundedAmount = this.roundToTwoDecimals(amount);
+          
+          if (roundedAmount > this.EPSILON) {
+            suggestions.push({
+              from: debtor,
+              to: creditor,
+              amount: roundedAmount
+            });
+            debtor.balance += roundedAmount;
+            creditor.balance -= roundedAmount;
+          }
         }
       }
     }

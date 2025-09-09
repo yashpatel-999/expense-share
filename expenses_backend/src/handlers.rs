@@ -360,12 +360,16 @@ pub async fn make_payment(
         .map_err(|e| actix_web::error::ErrorBadRequest(e))?;
     let group_id = path.into_inner();
 
+    // Parse to_user_id from string to UUID
+    let to_user_id = Uuid::from_str(&form.to_user_id)
+        .map_err(|e| actix_web::error::ErrorBadRequest(format!("Invalid to_user_id: {}", e)))?;
+
     sqlx::query!(
         "INSERT INTO payments (group_id, from_user_id, to_user_id, amount) 
          VALUES ($1, $2, $3, $4)",
         group_id,
         user_id,
-        form.to_user_id,
+        to_user_id,
         Decimal::from_f64_retain(form.amount).unwrap()
     )
     .execute(pool.get_ref())

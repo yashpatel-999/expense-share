@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.apiService.currentUser$.subscribe(user => {
+    this.apiService.  currentUser$.subscribe(user => {
       this.currentUser = user;
     });
   }
