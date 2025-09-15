@@ -14,7 +14,11 @@ async fn main() -> std::io::Result<()> {
     let pool = database::create_pool().await
         .expect("Failed to create database pool");
 
-    println!("Starting server at http://localhost:8080");
+    // Get port from environment variable (for Render) or default to 8080
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let bind_address = format!("0.0.0.0:{}", port);
+    
+    println!("Starting server at {}", bind_address);
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -27,6 +31,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             .wrap(cors)
             .wrap(Logger::default())
+            .route("/", web::get().to(|| async { "Expense Share API is running!" }))
+            .route("/health", web::get().to(|| async { "OK" }))
             .route("/login", web::post().to(handlers::login))
             .route("/admin/users", web::post().to(handlers::create_user))
             .route("/admin/users", web::get().to(handlers::get_users))
@@ -37,7 +43,7 @@ async fn main() -> std::io::Result<()> {
             .route("/groups/{id}/balances", web::get().to(handlers::get_group_balances))
             .route("/groups/{id}/payments", web::post().to(handlers::make_payment))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(&bind_address)?
     .run()
     .await
 }
