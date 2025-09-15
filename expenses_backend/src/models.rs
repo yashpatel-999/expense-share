@@ -72,12 +72,12 @@ pub struct Balance {
     pub balance: f64, // positive = should receive, negative = should pay
 }
 
-#[derive(Debug, Serialize)]
-pub struct Settlement {
-    pub from_user: String,
-    pub to_user: String,
-    pub amount: Decimal,
-}
+// #[derive(Debug, Serialize)]
+// pub struct Settlement {
+//     pub from_user: String,
+//     pub to_user: String,
+//     pub amount: Decimal,
+// }
 
 #[derive(Debug, Deserialize)]
 pub struct CreatePayment {
