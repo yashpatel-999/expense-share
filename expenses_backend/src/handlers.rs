@@ -1,13 +1,11 @@
-#[derive(serde::Serialize)]
-pub struct ExpenseResponse {
-    pub id: uuid::Uuid,
-    pub group_id: uuid::Uuid,
-    pub paid_by: uuid::Uuid,
-    pub amount: rust_decimal::Decimal,
-    pub description: String,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub username: String,
-}
+use actix_web::{web,HttpResponse,Result,HttpRequest};
+use sqlx::PgPool;
+use uuid::Uuid;
+use std::str::FromStr;
+use rust_decimal::Decimal;
+
+use crate::models::*;
+use crate::auth::*;
 
 pub async fn get_group_expenses(
     pool: web::Data<PgPool>,
@@ -52,14 +50,7 @@ pub async fn get_group_expenses(
 
     Ok(HttpResponse::Ok().json(response))
 }
-use actix_web::{web,HttpResponse,Result,HttpRequest};
-use sqlx::PgPool;
-use uuid::Uuid;
-use std::str::FromStr;
-use rust_decimal::Decimal;
 
-use crate::models::*;
-use crate::auth::*;
 
 pub async fn login(
     pool:web::Data<PgPool>,

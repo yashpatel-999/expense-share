@@ -84,3 +84,14 @@ pub struct CreatePayment {
     pub to_user_id: String,
     pub amount: f64,
 }
+
+#[derive(serde::Serialize)]
+pub struct ExpenseResponse {
+    pub id: uuid::Uuid,
+    pub group_id: uuid::Uuid,
+    pub paid_by: uuid::Uuid,
+    pub amount: rust_decimal::Decimal,
+    pub description: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub username: String,
+}
