@@ -14,7 +14,7 @@ export class ApiService {
       headers: this.getAuthHeaders()
     });
   }
-  private readonly baseUrl = 'http://localhost:8080';
+  private readonly baseUrl = 'https://expense-share-1.onrender.com/';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
