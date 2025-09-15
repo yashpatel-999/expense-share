@@ -4,7 +4,7 @@
   status = 200
 
 [build]
-  publish = "dist/expenses_frontend"
+  publish = "dist/expenses_frontend/browser"
   command = "npm run build"
 
 [build.environment]
