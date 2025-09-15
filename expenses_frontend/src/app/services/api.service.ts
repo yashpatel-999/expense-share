@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { User, LoginRequest, LoginResponse, CreateUserRequest } from '../models/user.interface';
 import { Group, CreateGroupRequest, Balance, CreateExpense, CreatePayment } from '../models/group.interface';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class ApiService {
       headers: this.getAuthHeaders()
     });
   }
-  private readonly baseUrl = 'https://expense-share-1.onrender.com';
+  private readonly baseUrl = environment.apiUrl;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
