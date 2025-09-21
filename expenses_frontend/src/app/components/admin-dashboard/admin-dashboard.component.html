@@ -50,22 +50,6 @@
           </div>
         </div>
         
-        <div class="form-group admin-privilege-group">
-          <div class="checkbox-group">
-            <input
-              type="checkbox"
-              name="isAdmin"
-              [(ngModel)]="newUser.is_admin"
-              id="admin-checkbox"
-              class="admin-checkbox"
-            />
-            <label for="admin-checkbox" class="admin-label">
-              <i class="bi bi-shield-check admin-icon"></i>
-              Grant Admin Privileges
-              <span class="admin-note">(Optional - User will be regular user by default)</span>
-            </label>
-          </div>
-        </div>
         
         <div class="message error-message" *ngIf="userError">
           <i class="bi bi-exclamation-triangle-fill"></i>
