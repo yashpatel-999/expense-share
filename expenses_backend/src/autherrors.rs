@@ -96,23 +96,3 @@ impl ResponseError for AuthError{
         HttpResponse::build(status).json(error_response)
     }
 }
-
-impl AuthError{
-    pub fn is_client_error(&self)->bool{
-        matches!(self,AuthError::InvalidCredentials|AuthError::UserNotFound)
-    }
-    pub fn is_server_error(&self)->bool{
-        !self.is_client_error()
-    }
-    pub fn error_code(&self) -> &'static str {
-        match self {
-            AuthError::InvalidCredentials => "AUTH_INVALID_CREDENTIALS",
-            AuthError::UserNotFound => "AUTH_USER_NOT_FOUND",
-            AuthError::DatabaseError(_) => "AUTH_DATABASE_ERROR",
-            AuthError::JwtError(_) => "AUTH_JWT_ERROR",
-            AuthError::PasswordHashError(_) => "AUTH_PASSWORD_ERROR",
-            AuthError::MissingJwtSecret => "AUTH_CONFIG_ERROR",
-        }
-    }
-
-}
