@@ -831,6 +831,7 @@ dependencies = [
  "dotenv",
  "env_logger",
  "jsonwebtoken",
+ "log",
  "rust_decimal",
  "serde",
  "serde_json",

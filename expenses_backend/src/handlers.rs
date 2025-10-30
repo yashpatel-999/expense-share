@@ -6,6 +6,8 @@ use rust_decimal::Decimal;
 
 use crate::models::*;
 use crate::auth::*;
+use crate::autherrors::AuthError;
+use crate::authservice::AuthService;
 
 pub async fn get_group_expenses(
     pool: web::Data<PgPool>,
@@ -55,71 +57,49 @@ pub async fn get_group_expenses(
 pub async fn login(
     pool:web::Data<PgPool>,
     form:web::Json<LoginRequest>,
-)->Result<HttpResponse>{
-    let user=sqlx::query_as::<_,User>(
-        "SELECT * FROM users WHERE email=$1"
-    )
-    .bind(&form.email)
-    .fetch_optional(pool.get_ref())
-    .await
-    .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
-
-    if let Some(user)=user{
-        if verify_password(&form.password,&user.password_hash)
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
-        {
-            let secret=std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-            let token=create_jwt(&user,&secret)
-            .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
-
-            return Ok(HttpResponse::Ok().json(serde_json::json!({
-                "token":token,
-                "user":UserResponse{
-                    id:user.id,
-                    email:user.email,
-                    username:user.username,
-                    is_admin:user.is_admin,
-                }
-            })))
-        }
-    }
-    Ok(HttpResponse::Unauthorized().json(serde_json::json!({
-        "error":"Invalid credentials"
+)->Result<HttpResponse,AuthError>{
+    let (token,user_response)=AuthService::login(pool.get_ref(),&form).await?;
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "token":token,
+        "user":user_response,
+        "message":"Login Successful"
     })))
 }
 
-fn get_user_from_request(req: &HttpRequest) -> Result<Claims> {
+fn get_user_from_request(req: &HttpRequest) -> Result<Claims,AuthError> {
     let auth_header = req.headers().get("Authorization")
-        .ok_or_else(|| actix_web::error::ErrorUnauthorized("No auth header"))?;
+        .ok_or(AuthError::InvalidCredentials)?;
     
     let auth_str = auth_header.to_str()
-        .map_err(|e| actix_web::error::ErrorBadRequest(e))?;
+        .map_err(|e| AuthError::JwtError(format!("Invalid auth header format: {}", e)))?;
     
     if !auth_str.starts_with("Bearer ") {
-        return Err(actix_web::error::ErrorUnauthorized("Invalid auth format"));
+        return Err(AuthError::InvalidCredentials);
     }
     
     let token = &auth_str[7..];
-    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    let secret = std::env::var("JWT_SECRET").map_err(|_| AuthError::MissingJwtSecret)?;
     
     verify_jwt(token, &secret)
-        .map_err(|e| actix_web::error::ErrorUnauthorized(e))
+         .map_err(|e| AuthError::JwtError(e.to_string()))
 }
 
 pub async fn create_user(
-    pool:web::Data<PgPool>,
-    form:web::Json<CreateUser>,
-    req:HttpRequest,
-)->Result<HttpResponse>{
-    let claims=get_user_from_request(&req)?;
-    if !claims.is_admin{
+    pool: web::Data<PgPool>,
+    form: web::Json<CreateUser>,
+    req: HttpRequest,
+) -> Result<HttpResponse> {
+    let claims = get_user_from_request(&req)
+        .map_err(|e| actix_web::error::ErrorUnauthorized(e.to_string()))?;
+    
+    if !claims.is_admin {
         return Ok(HttpResponse::Forbidden().json(serde_json::json!({"error":"Admin only"})));
     }
 
-    let password_hash=hash_password(&form.password)
-    .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
+    let password_hash = hash_password(&form.password)
+        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
 
-    let user=sqlx::query_as::<_,User>(
+    let user = sqlx::query_as::<_, User>(
         "INSERT INTO users (email,username,password_hash) VALUES ($1,$2,$3) RETURNING *"
     )
     .bind(&form.email)
@@ -130,10 +110,10 @@ pub async fn create_user(
     .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
 
     Ok(HttpResponse::Created().json(UserResponse{
-        id:user.id,
-        email:user.email,
-        username:user.username,
-        is_admin:user.is_admin,
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        is_admin: user.is_admin,
     }))
 }
 

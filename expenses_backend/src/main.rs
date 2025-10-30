@@ -2,6 +2,8 @@ mod models;
 mod database;
 mod auth;
 mod handlers;
+mod autherrors;
+mod authservice;
 
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use actix_cors::Cors;
@@ -16,7 +18,7 @@ async fn main() -> std::io::Result<()> {
 
     // Get port from environment variable (for Render) or default to 8080
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let bind_address = format!("0.0.0.0:{}", port);
+    let bind_address = format!("127.0.0.1:{}", port);
     
     println!("Starting server at {}", bind_address);
 
