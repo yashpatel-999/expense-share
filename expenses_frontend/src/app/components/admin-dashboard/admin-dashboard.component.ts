@@ -50,10 +50,10 @@ export class AdminDashboardComponent implements OnInit {
         this.users = users;
         this.isLoadingUsers = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading users:', error);
         this.isLoadingUsers = false;
-        alert('Error loading users. Please try again.');
+        alert(error.message || 'Error loading users. Please try again.');
       }
     });
   }
@@ -75,10 +75,10 @@ export class AdminDashboardComponent implements OnInit {
         this.newUser = { email: '', username: '', password: '', is_admin: false };
         this.loadUsers(); // Refresh the list
       },
-      error: (error) => {
+      error: (error: any) => {
         this.isCreatingUser = false;
-        this.userError = error.error?.message || 'Failed to create user. Please try again.';
-        console.error('Create user error:', error);
+        this.userError = error.message || 'Failed to create user. Please try again.';
+        console.error('Error creating user:', error);
       }
     });
   }
@@ -119,9 +119,9 @@ export class AdminDashboardComponent implements OnInit {
         this.newGroup.name = '';
         this.selectedUsers = [];
       },
-      error: (error) => {
+      error: (error: any) => {
         this.isCreatingGroup = false;
-        this.groupError = error.error?.message || 'Failed to create group. Please try again.';
+        this.groupError = error.message || 'Failed to create group. Please try again.';
         console.error('Create group error:', error);
       }
     });

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { User, LoginRequest, LoginResponse, CreateUserRequest } from '../models/user.interface';
 import { Group, CreateGroupRequest, Balance, CreateExpense, CreatePayment } from '../models/group.interface';
 import { environment } from '../../environments/environment';
@@ -13,7 +13,9 @@ export class ApiService {
   getGroupExpenses(groupId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/groups/${groupId}/expenses`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
   private readonly baseUrl = environment.apiUrl;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -36,11 +38,19 @@ export class ApiService {
 
   // Auth methods
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, request).pipe(
+    console.log('Making login request to:', `${this.baseUrl}/auth/login`);
+    console.log('Request data:', request);
+    
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login`, request).pipe(
       tap(response => {
+        console.log('Login response received:', response);
         this.setToken(response.token);
         this.setUser(response.user);
         this.currentUserSubject.next(response.user);
+      }),
+      catchError((error) => {
+        console.error('Login error in service:', error);
+        return throwError(() => error);
       })
     );
   }
@@ -90,47 +100,67 @@ export class ApiService {
     });
   }
 
+  // Simple error handler
+  private handleError(error: any): Observable<never> {
+    console.error('API Error:', error);
+    return throwError(() => error);
+  }
+
   // Admin API methods
   getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.baseUrl}/admin/users`, {
+    return this.http.get<User[]>(`${this.baseUrl}/users`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   createUser(request: CreateUserRequest): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/admin/users`, request, {
+    return this.http.post<User>(`${this.baseUrl}/users`, request, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   createGroup(request: CreateGroupRequest): Observable<Group> {
-    return this.http.post<Group>(`${this.baseUrl}/admin/groups`, request, {
+    return this.http.post<Group>(`${this.baseUrl}/groups`, request, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // User API methods
   getUserGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(`${this.baseUrl}/groups`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   getGroupBalances(groupId: string): Observable<Balance[]> {
     return this.http.get<Balance[]>(`${this.baseUrl}/groups/${groupId}/balances`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   addExpense(groupId: string, expense: CreateExpense): Observable<any> {
     return this.http.post(`${this.baseUrl}/groups/${groupId}/expenses`, expense, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   recordPayment(groupId: string, payment: CreatePayment): Observable<any> {
     return this.http.post(`${this.baseUrl}/groups/${groupId}/payments`, payment, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 }

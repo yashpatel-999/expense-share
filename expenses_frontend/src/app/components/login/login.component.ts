@@ -37,26 +37,34 @@ export class LoginComponent {
       return;
     }
 
+    console.log('Login form submitted with:', this.loginData);
     this.isLoading = true;
     this.errorMessage = '';
 
     this.apiService.login(this.loginData).subscribe({
       next: (response) => {
+        console.log('Login successful in component:', response);
         this.isLoading = false;
         this.redirectBasedOnRole();
       },
-      error: (error) => {
+      error: (error: any) => {
+        console.error('Login error in component:', error);
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Login failed. Please try again.';
-        console.error('Login error:', error);
+        this.errorMessage = error.message || error.error?.message || 'Login failed. Please try again.';
       }
     });
   }
 
   private redirectBasedOnRole() {
+    console.log('Checking user role for redirect...');
+    console.log('Current user:', this.apiService.getCurrentUser());
+    console.log('Is admin?', this.apiService.isAdmin());
+    
     if (this.apiService.isAdmin()) {
+      console.log('Redirecting to admin dashboard');
       this.router.navigate(['/admin']);
     } else {
+      console.log('Redirecting to user dashboard');
       this.router.navigate(['/dashboard']);
     }
   }
