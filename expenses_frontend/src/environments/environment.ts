@@ -1,4 +1,8 @@
+declare const window: any;
+
 export const environment = {
   production: true,
-  apiUrl: 'https://expense-share-1.onrender.com/api'
+  apiUrl:
+    (typeof window !== 'undefined' && window.apiUrl) ||
+    'http://localhost:8080/api',
 };

@@ -1,0 +1,63 @@
+name: Deploy to Azure Container Apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: expenseshareacr.azurecr.io
+  RESOURCE_GROUP: expense-share-rg
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to ACR
+        run: |
+          az acr login --name expenseshareacr
+
+      - name: Build and push backend image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/expenses-backend:${{ github.sha }} ./expenses_backend
+          docker build -t ${{ env.REGISTRY }}/expenses-backend:latest ./expenses_backend
+          docker push ${{ env.REGISTRY }}/expenses-backend:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/expenses-backend:latest
+
+      - name: Build and push frontend image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/expenses-frontend:${{ github.sha }} ./expenses_frontend
+          docker build -t ${{ env.REGISTRY }}/expenses-frontend:latest ./expenses_frontend
+          docker push ${{ env.REGISTRY }}/expenses-frontend:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/expenses-frontend:latest
+
+      - name: Deploy backend to Container Apps
+        run: |
+          az containerapp update \
+            --name expenses-backend \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY }}/expenses-backend:latest
+
+      - name: Deploy frontend to Container Apps
+        run: |
+          az containerapp update \
+            --name expenses-frontend \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY }}/expenses-frontend:latest
+
+      - name: Get deployment URLs
+        run: |
+          echo "Backend URL: $(az containerapp show --resource-group ${{ env.RESOURCE_GROUP }} --name expenses-backend --query properties.configuration.ingress.fqdn -o tsv)"
+          echo "Frontend URL: $(az containerapp show --resource-group ${{ env.RESOURCE_GROUP }} --name expenses-frontend --query properties.configuration.ingress.fqdn -o tsv)"

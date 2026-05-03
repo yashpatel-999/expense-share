@@ -6,6 +6,11 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Set API URL at runtime from environment variable or use default
+    // This will be replaced by docker-entrypoint if API_URL env var is set
+    window.apiUrl = '__API_URL__' !== '__API_URL__' ? '__API_URL__' : 'http://localhost:8080/api';
+  </script>
 </head>
 <body>
   <app-root></app-root>

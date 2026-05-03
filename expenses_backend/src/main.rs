@@ -1,5 +1,5 @@
 use actix_cors::Cors;
-use actix_web::{App, HttpServer, middleware::Logger, web};
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
@@ -25,8 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:4200")
-            .allowed_origin("http://127.0.0.1:4200")
+            .allow_any_origin()
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
             .allowed_headers(vec!["Content-Type", "Authorization"])
             .supports_credentials();
@@ -76,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 web::post().to(expenses_backend::handlers::make_payment),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await?;
 
